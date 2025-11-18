@@ -43,7 +43,29 @@ echo -e "${GREEN}✓ Dependencies installed${NC}"
 # Create .env file if it doesn't exist
 if [ ! -f ".env" ]; then
     echo -e "${BLUE}Creating .env file...${NC}"
-    cp .env.example .env
+    cat > .env << 'EOF'
+# Django Settings
+SECRET_KEY=django-insecure-$(openssl rand -base64 32)
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DATABASE_URL=sqlite:///db.sqlite3
+
+# RAG Configuration
+OLLAMA_BASE_URL=http://localhost:11434
+LLM_MODEL=llama3.1:8b
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+CHROMA_PERSIST_DIR=./data/chromadb
+
+# AI Settings
+MAX_CONTEXT_LENGTH=4096
+TEMPERATURE=0.7
+TOP_K=5
+
+# Content
+CONTENT_DIR=./data/learning_content
+EOF
     echo -e "${GREEN}✓ .env file created${NC}"
 else
     echo -e "${GREEN}✓ .env file already exists${NC}"

@@ -1,6 +1,14 @@
 """
 ChromaDB vector store provider.
 """
+# Fix for SQLite version issue - use pysqlite3 if available
+import sys
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
+
 import chromadb
 from typing import List, Dict, Any, Optional
 import uuid
