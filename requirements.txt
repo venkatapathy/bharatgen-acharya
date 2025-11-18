@@ -1,0 +1,43 @@
+# Core Django
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+python-decouple==3.8
+
+# Authentication
+djangorestframework-simplejwt==5.3.0
+django-allauth==0.57.0
+
+# RAG and AI (updated for Python 3.12 compatibility)
+langchain==0.1.20
+langchain-community==0.0.38
+chromadb==0.4.24
+sentence-transformers==2.7.0
+ollama==0.1.9
+
+# Vector store and embeddings (updated versions)
+numpy==1.26.4
+faiss-cpu==1.8.0
+
+# Document processing
+pypdf==4.2.0
+python-docx==1.1.0
+markdown==3.6
+beautifulsoup4==4.12.3
+lxml==5.2.1
+
+# Utilities
+python-dotenv==1.0.1
+requests==2.31.0
+pillow==10.3.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Development
+ipython==8.24.0
+
+# Additional dependencies for Python 3.12 compatibility
+setuptools>=69.0.0
+wheel>=0.43.0
+

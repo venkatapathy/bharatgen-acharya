@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container dashboard">
+    <div class="page-header">
+        <h1>Welcome back, <span id="userFirstName">Learner</span>!</h1>
+        <p>Continue your AI learning journey</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+                <h3 id="enrolledPaths">0</h3>
+                <p>Enrolled Paths</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <h3 id="completedPaths">0</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-info">
+                <h3 id="currentStreak">0</h3>
+                <p>Day Streak</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-info">
+                <h3 id="totalTime">0</h3>
+                <p>Hours Learned</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue Learning -->
+    <section class="section">
+        <h2>Continue Learning</h2>
+        <div id="inProgressPaths" class="path-grid">
+            <div class="loading">Loading your learning paths...</div>
+        </div>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="section">
+        <h2>Recommended for You</h2>
+        <div id="recommendations" class="path-grid">
+            <div class="loading">Loading recommendations...</div>
+        </div>
+    </section>
+
+    <!-- Achievements -->
+    <section class="section">
+        <h2>Your Achievements</h2>
+        <div id="achievements" class="achievements-grid">
+            <div class="loading">Loading achievements...</div>
+        </div>
+    </section>
+</div>
+
+<script>
+async function loadDashboard() {
+    try {
+        // Load dashboard stats
+        const dashboardData = await apiCall('/api/auth/profile/dashboard/');
+        
+        // Update stats
+        document.getElementById('enrolledPaths').textContent = dashboardData.learning_stats.enrolled_paths;
+        document.getElementById('completedPaths').textContent = dashboardData.learning_stats.completed_paths;
+        document.getElementById('currentStreak').textContent = dashboardData.learning_stats.current_streak;
+        document.getElementById('totalTime').textContent = Math.round(dashboardData.learning_stats.total_time_spent / 60);
+        
+        // Load in-progress paths
+        const inProgressPaths = dashboardData.progress_overview.paths.filter(p => p.status === 'in_progress');
+        const inProgressContainer = document.getElementById('inProgressPaths');
+        
+        if (inProgressPaths.length === 0) {
+            inProgressContainer.innerHTML = '<p class="empty-state">No learning paths in progress. <a href="/learning-paths/">Browse learning paths</a></p>';
+        } else {
+            inProgressContainer.innerHTML = inProgressPaths.map(path => `
+                <div class="path-card">
+                    <h3>${path.title}</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${path.progress_percentage}%"></div>
+                    </div>
+                    <p>${Math.round(path.progress_percentage)}% complete</p>
+                    <a href="/learning-paths/${path.id}/" class="btn btn-primary">Continue</a>
+                </div>
+            `).join('');
+        }
+        
+        // Load recommendations
+        const recommendations = await apiCall('/api/recommendations/recommendations/');
+        const recsContainer = document.getElementById('recommendations');
+        
+        if (recommendations.length === 0) {
+            recsContainer.innerHTML = '<p class="empty-state">No recommendations available yet.</p>';
+        } else {
+            recsContainer.innerHTML = recommendations.slice(0, 3).map(rec => {
+                const path = rec.learning_path_detail;
+                return `
+                    <div class="path-card">
+                        <div class="recommendation-badge">${rec.recommendation_type.replace('_', ' ')}</div>
+                        <h3>${path.title}</h3>
+                        <p>${path.description.substring(0, 100)}...</p>
+                        <small>${rec.reasoning}</small>
+                        <a href="/learning-paths/${path.slug}/" class="btn btn-outline" onclick="markRecommendationClicked(${rec.id})">Explore</a>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Load achievements
+        const achievementsContainer = document.getElementById('achievements');
+        if (dashboardData.achievements.length === 0) {
+            achievementsContainer.innerHTML = '<p class="empty-state">Keep learning to unlock achievements!</p>';
+        } else {
+            achievementsContainer.innerHTML = dashboardData.achievements.map(ach => `
+                <div class="achievement-card">
+                    <div class="achievement-icon">${ach.icon}</div>
+                    <h4>${ach.title}</h4>
+                    <p>${ach.description}</p>
+                </div>
+            `).join('');
+        }
+        
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+async function markRecommendationClicked(recId) {
+    try {
+        await apiCall(`/api/recommendations/recommendations/${recId}/mark_clicked/`, 'POST');
+    } catch (error) {
+        console.error('Error marking recommendation:', error);
+    }
+}
+
+// Load dashboard on page load
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}
+

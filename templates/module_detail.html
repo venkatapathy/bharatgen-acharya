@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Module - AI Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div id="moduleDetail">
+        <div class="loading">Loading module...</div>
+    </div>
+</div>
+
+<script>
+let currentContentIndex = 0;
+let contents = [];
+
+async function loadModuleDetail() {
+    const moduleId = window.location.pathname.split('/')[2];
+    
+    try {
+        const module = await apiCall(`/api/learning/modules/${moduleId}/`);
+        contents = module.contents;
+        
+        document.getElementById('moduleDetail').innerHTML = `
+            <div class="module-detail">
+                <div class="breadcrumb">
+                    <a href="/learning-paths/">Learning Paths</a> / 
+                    <a href="/learning-paths/${module.learning_path}/">Back to Path</a>
+                </div>
+                
+                <h1>${module.title}</h1>
+                <p class="lead">${module.description}</p>
+                
+                <div class="content-container">
+                    <div class="content-sidebar">
+                        <h3>Contents</h3>
+                        <ul class="content-list" id="contentList">
+                            ${contents.map((content, index) => `
+                                <li class="content-item ${index === 0 ? 'active' : ''}" onclick="showContent(${index})">
+                                    <span class="content-number">${index + 1}</span>
+                                    <div>
+                                        <div>${content.title}</div>
+                                        <small>${content.content_type} • ${content.estimated_minutes}min</small>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="content-main" id="contentMain">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        showContent(0);
+        
+    } catch (error) {
+        console.error('Error loading module:', error);
+        document.getElementById('moduleDetail').innerHTML = '<p class="error">Failed to load module.</p>';
+    }
+}
+
+function showContent(index) {
+    currentContentIndex = index;
+    const content = contents[index];
+    
+    // Update sidebar
+    document.querySelectorAll('.content-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+    });
+    
+    // Render content
+    let contentHTML = `
+        <div class="content-detail">
+            <h2>${content.title}</h2>
+            <div class="content-type-badge">${content.content_type}</div>
+            
+            ${content.text_content ? `<div class="content-text">${content.text_content}</div>` : ''}
+            ${content.code_content ? `<pre><code>${content.code_content}</code></pre>` : ''}
+            ${content.video_url ? `<div class="video-container"><iframe src="${content.video_url}" allowfullscreen></iframe></div>` : ''}
+            ${content.external_url ? `<a href="${content.external_url}" target="_blank" class="btn btn-outline">Open External Resource</a>` : ''}
+            
+            <div class="content-actions">
+                ${index > 0 ? `<button onclick="showContent(${index - 1})" class="btn btn-outline">← Previous</button>` : '<div></div>'}
+                <button onclick="markComplete(${content.id})" class="btn btn-primary">Mark Complete</button>
+                ${index < contents.length - 1 ? `<button onclick="showContent(${index + 1})" class="btn btn-primary">Next →</button>` : '<div></div>'}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('contentMain').innerHTML = contentHTML;
+}
+
+async function markComplete(contentId) {
+    try {
+        await apiCall(`/api/learning/contents/${contentId}/mark_complete/`, 'POST');
+        alert('Content marked as complete!');
+        
+        // Move to next content if available
+        if (currentContentIndex < contents.length - 1) {
+            showContent(currentContentIndex + 1);
+        }
+    } catch (error) {
+        console.error('Error marking complete:', error);
+        alert('Failed to mark complete. Please try again.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadModuleDetail);
+</script>
+{% endblock %}
+

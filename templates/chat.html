@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}AI Chat - AI Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container chat-container">
+    <div class="chat-layout">
+        <!-- Chat Sessions Sidebar -->
+        <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                <h3>Chat Sessions</h3>
+                <button onclick="createNewSession()" class="btn btn-primary btn-sm">+ New</button>
+            </div>
+            <div id="sessionsList" class="sessions-list">
+                <div class="loading">Loading sessions...</div>
+            </div>
+        </div>
+        
+        <!-- Chat Main Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <h2 id="chatTitle">AI Learning Assistant</h2>
+                <button onclick="clearChat()" class="btn btn-outline btn-sm">Clear Chat</button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <h3>👋 Welcome to AI Chat!</h3>
+                    <p>Ask me anything about AI and machine learning. I'm here to help you learn!</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Type your question here..." 
+                    rows="3"
+                    onkeydown="handleKeyPress(event)"
+                ></textarea>
+                <button onclick="sendMessage()" class="btn btn-primary" id="sendBtn">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/chat.js"></script>
+{% endblock %}
+

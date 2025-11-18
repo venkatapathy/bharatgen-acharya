@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Path Detail - AI Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div id="pathDetail">
+        <div class="loading">Loading learning path...</div>
+    </div>
+</div>
+
+<script>
+async function loadPathDetail() {
+    const slug = window.location.pathname.split('/')[2];
+    
+    try {
+        const paths = await apiCall(`/api/learning/paths/?search=${slug}`);
+        const path = paths.results ? paths.results[0] : paths[0];
+        
+        if (!path) {
+            document.getElementById('pathDetail').innerHTML = '<p class="error">Learning path not found.</p>';
+            return;
+        }
+        
+        const isEnrolled = path.user_enrollment;
+        
+        document.getElementById('pathDetail').innerHTML = `
+            <div class="path-detail-header">
+                ${path.thumbnail ? `<img src="${path.thumbnail}" alt="${path.title}" class="path-detail-img">` : ''}
+                <div>
+                    <div class="difficulty-badge ${path.difficulty_level}">${path.difficulty_level}</div>
+                    <h1>${path.title}</h1>
+                    <p class="lead">${path.description}</p>
+                    <div class="path-meta-large">
+                        <span>⏱️ ${path.estimated_hours} hours</span>
+                        <span>📚 ${path.module_count} modules</span>
+                        <span>⭐ ${path.average_rating.toFixed(1)}</span>
+                        <span>👥 ${path.total_enrollments} enrolled</span>
+                    </div>
+                    ${!isEnrolled 
+                        ? `<button onclick="enrollInPath(${path.id})" class="btn btn-primary btn-large">Enroll Now</button>`
+                        : `<button class="btn btn-success btn-large" disabled>✓ Enrolled</button>`
+                    }
+                </div>
+            </div>
+            
+            ${path.user_progress ? `
+                <div class="progress-section">
+                    <h3>Your Progress</h3>
+                    <div class="progress-bar large">
+                        <div class="progress-fill" style="width: ${path.user_progress.progress_percentage}%"></div>
+                    </div>
+                    <p>${Math.round(path.user_progress.progress_percentage)}% complete • ${path.user_progress.time_spent_minutes} minutes spent</p>
+                </div>
+            ` : ''}
+            
+            <div class="modules-section">
+                <h2>Course Modules</h2>
+                <div class="modules-list">
+                    ${path.modules.map((module, index) => `
+                        <div class="module-card">
+                            <div class="module-header">
+                                <span class="module-number">${index + 1}</span>
+                                <div>
+                                    <h3>${module.title}</h3>
+                                    <p>${module.description}</p>
+                                    <small>⏱️ ${module.estimated_minutes} minutes • ${module.contents.length} items</small>
+                                </div>
+                            </div>
+                            ${isEnrolled ? `
+                                <a href="/module/${module.id}/" class="btn btn-outline">
+                                    ${module.user_progress ? 'Continue' : 'Start'}
+                                </a>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading path detail:', error);
+        document.getElementById('pathDetail').innerHTML = '<p class="error">Failed to load learning path.</p>';
+    }
+}
+
+async function enrollInPath(pathId) {
+    try {
+        await apiCall(`/api/learning/paths/${pathId}/enroll/`, 'POST');
+        alert('Successfully enrolled!');
+        location.reload();
+    } catch (error) {
+        console.error('Error enrolling:', error);
+        alert('Failed to enroll. Please try again.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadPathDetail);
+</script>
+{% endblock %}
+

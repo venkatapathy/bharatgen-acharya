@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Paths - AI Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>AI Learning Paths</h1>
+        <p>Choose your learning journey</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <select id="difficultyFilter" onchange="filterPaths()">
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+        </select>
+        
+        <input type="text" id="searchInput" placeholder="Search learning paths..." onkeyup="filterPaths()">
+    </div>
+
+    <!-- Learning Paths Grid -->
+    <div id="learningPaths" class="path-grid">
+        <div class="loading">Loading learning paths...</div>
+    </div>
+</div>
+
+<script>
+let allPaths = [];
+
+async function loadLearningPaths() {
+    try {
+        const paths = await apiCall('/api/learning/paths/');
+        allPaths = paths.results || paths;
+        renderPaths(allPaths);
+    } catch (error) {
+        console.error('Error loading learning paths:', error);
+        document.getElementById('learningPaths').innerHTML = '<p class="error">Failed to load learning paths.</p>';
+    }
+}
+
+function renderPaths(paths) {
+    const container = document.getElementById('learningPaths');
+    
+    if (paths.length === 0) {
+        container.innerHTML = '<p class="empty-state">No learning paths found.</p>';
+        return;
+    }
+    
+    container.innerHTML = paths.map(path => `
+        <div class="path-card">
+            ${path.thumbnail ? `<img src="${path.thumbnail}" alt="${path.title}">` : ''}
+            <div class="path-card-content">
+                <div class="difficulty-badge ${path.difficulty_level}">${path.difficulty_level}</div>
+                <h3>${path.title}</h3>
+                <p>${path.description.substring(0, 150)}...</p>
+                <div class="path-meta">
+                    <span>⏱️ ${path.estimated_hours}h</span>
+                    <span>📚 ${path.module_count} modules</span>
+                    <span>⭐ ${path.average_rating.toFixed(1)}</span>
+                </div>
+                <div class="path-tags">
+                    ${(path.tags || []).slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                ${path.is_enrolled 
+                    ? '<a href="/learning-paths/' + path.slug + '/" class="btn btn-primary">Continue Learning</a>'
+                    : '<a href="/learning-paths/' + path.slug + '/" class="btn btn-outline">View Details</a>'
+                }
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterPaths() {
+    const difficulty = document.getElementById('difficultyFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    
+    let filtered = allPaths;
+    
+    if (difficulty) {
+        filtered = filtered.filter(path => path.difficulty_level === difficulty);
+    }
+    
+    if (search) {
+        filtered = filtered.filter(path => 
+            path.title.toLowerCase().includes(search) || 
+            path.description.toLowerCase().includes(search)
+        );
+    }
+    
+    renderPaths(filtered);
+}
+
+document.addEventListener('DOMContentLoaded', loadLearningPaths);
+</script>
+{% endblock %}
+
