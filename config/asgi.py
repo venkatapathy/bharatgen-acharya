@@ -1,5 +1,5 @@
 """
-ASGI config for AI Learning Platform project.
+ASGI config for BharatGen Acharya project.
 """
 
 import os

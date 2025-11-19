@@ -1,5 +1,5 @@
 """
-URL configuration for AI Learning Platform project.
+URL configuration for BharatGen Acharya project.
 """
 from django.contrib import admin
 from django.urls import path, include

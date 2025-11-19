@@ -1,5 +1,5 @@
 """
-Django settings for AI Learning Platform project.
+Django settings for BharatGen Acharya project.
 """
 import os
 from pathlib import Path

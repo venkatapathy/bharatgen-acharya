@@ -1,5 +1,5 @@
 """
-WSGI config for AI Learning Platform project.
+WSGI config for BharatGen Acharya project.
 """
 
 import os

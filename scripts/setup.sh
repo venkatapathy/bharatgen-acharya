@@ -1,9 +1,9 @@
 #!/bin/bash
-# Setup script for BharatGen Acharya AI Learning Platform
+# Setup script for BharatGen Acharya
 
 set -e
 
-echo "🎓 Setting up BharatGen Acharya AI Learning Platform..."
+echo "🎓 Setting up BharatGen Acharya..."
 echo ""
 
 # Colors for output
