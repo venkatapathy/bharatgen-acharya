@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}AI Chat - BharatGen Acharya{% endblock %}
+{% block title %}AI Chat - BharatGen Yojaka{% endblock %}
 
 {% block content %}
 <div class="container chat-container">
@@ -45,6 +45,10 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/marked.min.js"></script>
 <script src="/static/js/chat.js"></script>
 {% endblock %}
 

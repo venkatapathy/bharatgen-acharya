@@ -1,6 +1,6 @@
 # 📖 Complete Setup Guide
 
-This guide will walk you through setting up the BharatGen Acharya from scratch.
+This guide will walk you through setting up the BharatGen Yojaka from scratch.
 
 ## Table of Contents
 

@@ -1,5 +1,5 @@
 """
-Django settings for BharatGen Acharya project.
+Django settings for BharatGen Yojaka project.
 """
 import os
 from pathlib import Path

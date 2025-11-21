@@ -1,5 +1,5 @@
 """
-WSGI config for BharatGen Acharya project.
+WSGI config for BharatGen Yojaka project.
 """
 
 import os

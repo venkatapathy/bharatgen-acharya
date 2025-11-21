@@ -39,7 +39,7 @@ Output :
 
 # Gradio UI
 with gr.Blocks() as app:
-    gr.Markdown("### BharatGen Acharya - AI Answer Evaluator")
+    gr.Markdown("### BharatGen Yojaka - AI Answer Evaluator")
 
     q = gr.Textbox(label="Question")
     ref = gr.Textbox(label="Reference Answer")

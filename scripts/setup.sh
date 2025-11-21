@@ -1,9 +1,9 @@
 #!/bin/bash
-# Setup script for BharatGen Acharya
+# Setup script for BharatGen Yojaka
 
 set -e
 
-echo "🎓 Setting up BharatGen Acharya..."
+echo "🎓 Setting up BharatGen Yojaka..."
 echo ""
 
 # Colors for output

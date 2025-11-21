@@ -1,4 +1,4 @@
-# 🎓 BharatGen Acharya - AI Learning Platform
+# 🎓 BharatGen Yojaka - AI Learning Platform
 
 An intelligent learning platform powered by Django, RAG (Retrieval-Augmented Generation), and Llama 3.1. Features interactive learning paths, AI-powered chat assistance, and personalized recommendations.
 

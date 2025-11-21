@@ -2,7 +2,7 @@
 
 ## 🏗️ Project Overview
 
-**BharatGen Acharya** is an intelligent, AI-powered learning platform designed to deliver interactive courses, personalized recommendations, and an AI chat assistant. It uses a hybrid architecture combining a traditional Django web application with a modern RAG (Retrieval-Augmented Generation) pipeline for AI features.
+**BharatGen Yojaka** is an intelligent, AI-powered learning platform designed to deliver interactive courses, personalized recommendations, and an AI chat assistant. It uses a hybrid architecture combining a traditional Django web application with a modern RAG (Retrieval-Augmented Generation) pipeline for AI features.
 
 ## 🛠️ Technology Stack
 

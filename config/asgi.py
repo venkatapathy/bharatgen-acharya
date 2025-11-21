@@ -1,5 +1,5 @@
 """
-ASGI config for BharatGen Acharya project.
+ASGI config for BharatGen Yojaka project.
 """
 
 import os
