@@ -50,6 +50,7 @@ graph TD
     
     subgraph "External / Local AI"
         Ollama[Ollama Service\n(Llama 3.1 Model)]
+        Gemini[Google Gemini API\n(Multimodal)]
     end
 
     %% Flow
@@ -59,6 +60,7 @@ graph TD
     Router --> Chat
     
     Chat --> RAG
+    Learning --> Gemini
     Recs --> Learning
     Recs --> SQL
     
@@ -79,9 +81,13 @@ graph TD
 *   **Key Models:** User profile extensions, base classes.
 
 ### 2. `apps/learning`
-*   **Responsibility:** Manages the educational content structure.
-*   **Key Models:** `LearningPath`, `Module`, `Lesson`, `UserProgress`.
-*   **Logic:** Tracks what users have learned and serves course content.
+*   **Responsibility:** Manages the educational content structure and interactive practice.
+*   **Key Models:** `LearningPath`, `Module`, `Content`, `UserProgress`.
+*   **Features:**
+    *   **Course Delivery:** Text, Video, and Concept Graph content.
+    *   **Quizzes:** Dynamic quiz generation via LLMs.
+    *   **Speaking Practice:** Audio recording and AI evaluation (via Gemini).
+    *   **Progress Tracking:** Granular status updates and completion metrics.
 
 ### 3. `apps/chat`
 *   **Responsibility:** Handles the user-facing chat interface and session management.
@@ -89,10 +95,12 @@ graph TD
 *   **Flow:** Receives user input $\to$ Calls `apps/rag` $\to$ Saves history $\to$ Returns response.
 
 ### 4. `apps/rag` (The AI Brain)
-*   **Responsibility:** Implements the RAG pipeline.
+*   **Responsibility:** Implements the RAG pipeline and LLM Providers.
 *   **Components:**
     *   `pipeline.py`: Orchestrates the retrieval and generation.
-    *   `providers/`: Adapters for LLMs (Ollama) and Vector Stores (Chroma).
+    *   `providers/`: Adapters for LLMs:
+        *   `llama_provider.py`: Interface for local Ollama models.
+        *   `gemini_provider.py`: Interface for Google Gemini (Text & Audio).
     *   `document_loader.py`: Ingests learning content into the vector store.
 
 ### 5. `apps/recommendations`
@@ -119,6 +127,17 @@ When a user asks a question in the chat:
     *   The system constructs a prompt: `Context + User Question`.
     *   Prompt is sent to **Ollama (Llama 3.1)**.
     *   The LLM generates an answer based *only* on the provided course material.
+
+## 🎤 Data Flow: Speaking Practice (Audio)
+
+When a user submits a speaking exercise:
+
+1.  **Recording:** Browser captures audio (WAV) and uploads to Django.
+2.  **Upload:** Django saves the file temporarily and initializes `GeminiProvider`.
+3.  **Analysis:**
+    *   Audio + Reference Text is sent to **Google Gemini 2.0 Flash**.
+    *   Gemini processes the audio (Multimodal) to analyze pronunciation and fluency.
+4.  **Feedback:** Returns a JSON object with a grade (0-100) and qualitative feedback.
 
 ## 📂 Directory Structure Highlights
 
