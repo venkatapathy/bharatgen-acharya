@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q
 from django.utils import timezone
-from .models import LearningPath, Module, Content, UserProgress, UserEnrollment, Concept
+from .models import LearningPath, Module, Content, UserProgress, UserEnrollment, Concept, StudentAnswer, Evaluation
 from .serializers import (
     LearningPathSerializer, LearningPathListSerializer,
     ModuleSerializer, ModuleListSerializer,
@@ -11,6 +11,7 @@ from .serializers import (
     UserEnrollmentSerializer, ConceptSerializer
 )
 from .quiz_generator import QuizGenerator
+from .services import AIEvaluator
 
 
 class LearningPathViewSet(viewsets.ModelViewSet):
@@ -383,3 +384,113 @@ class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
             
         return queryset
 
+
+class StudentAnswerViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]  # ID-based for now
+
+    def create(self, request):
+        """
+        POST /learning/answers/
+        Save student answer (no evaluation)
+        """
+        student_id = request.data.get("student_id")
+        question_id = request.data.get("question_id")
+        response = request.data.get("response")
+
+        if not all([student_id, question_id, response]):
+            return Response(
+                {"error": "Missing required fields"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        StudentAnswer.objects.create(
+            student_id=student_id,
+            question_id=question_id,
+            response=response
+        )
+
+        return Response(
+            {"message": "Answer saved successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+class EvaluationViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]  # tighten later
+
+    def create(self, request):
+        """
+        POST /learning/evaluations/
+        Teacher triggers AI evaluation
+        """
+        question_id = request.data.get("question_id")
+
+        if not question_id:
+            return Response(
+                {"error": "question_id required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+        answers = StudentAnswer.objects.filter(question_id=question_id)
+
+        evaluator = AIEvaluator()
+
+        results = []
+
+        for answer in answers:
+            ai_result = evaluator.evaluate(
+                question=question_id,
+                student_answer=answer.response
+            )
+
+            evaluation, _ = Evaluation.objects.update_or_create(
+                answer=answer,
+                defaults={
+                    "ai_score": ai_result["score"],
+                    "ai_feedback": ai_result["feedback"],
+                    "raw_prompt": ai_result["raw_prompt"],
+                    "raw_response": ai_result["raw_response"],
+                    "evaluated_at": timezone.now()
+                }
+            )
+
+            results.append({
+                "student_id": answer.student_id,
+                "ai_score": evaluation.ai_score,
+                "ai_feedback": evaluation.ai_feedback
+            })
+
+        return Response(results, status=status.HTTP_200_OK)
+
+
+class FinalScoreViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request):
+        """
+        POST /learning/finalize/
+        Teacher overrides and finalizes score
+        """
+        student_id = request.data.get("student_id")
+        question_id = request.data.get("question_id")
+        final_score = request.data.get("final_score")
+
+        if not all([student_id, question_id, final_score]):
+            return Response(
+                {"error": "Missing required fields"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        answer = StudentAnswer.objects.get(
+            student_id=student_id,
+            question_id=question_id
+        )
+
+        evaluation, _ = Evaluation.objects.get_or_create(answer=answer)
+        evaluation.final_score = final_score
+        evaluation.save()
+
+        return Response(
+            {"message": "Final score saved"},
+            status=status.HTTP_200_OK
+        )

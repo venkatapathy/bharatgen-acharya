@@ -207,3 +207,24 @@ class UserEnrollment(models.Model):
     def __str__(self):
         return f"{self.user.username} enrolled in {self.learning_path.title}"
 
+class StudentAnswer(models.Model):
+    student_id = models.CharField(max_length=50)
+    question_id = models.CharField(max_length=50)
+    response = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+
+class Evaluation(models.Model):
+    answer = models.OneToOneField(StudentAnswer, on_delete=models.CASCADE)
+
+    ai_score = models.FloatField(null=True, blank=True)
+    ai_feedback = models.TextField(null=True, blank=True)
+
+    raw_prompt = models.TextField(null=True, blank=True)
+    raw_response = models.TextField(null=True, blank=True)
+
+    final_score = models.FloatField(null=True, blank=True)
+    evaluated_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Evaluation for {self.answer.student_id} - {self.answer.question_id}"
